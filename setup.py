@@ -15,6 +15,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/Yepoleb/dayzquery",
     py_modules=["dayzquery"],
+    install_requires=["python-a2s"],
     license="MIT License",
     classifiers=[
         "License :: OSI Approved :: MIT License",

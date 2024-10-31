@@ -63,11 +63,11 @@ class DayzRules(metaclass=DataclsMeta):
 
 
 def dayz_rules(address, timeout=DEFAULT_TIMEOUT, encoding=DEFAULT_ENCODING):
-    rules_resp = a2s.rules(address, encoding=None)
+    rules_resp = a2s.rules(address, timeout, encoding=None)
     return dayz_rules_decode(rules_resp, encoding)
 
 async def dayz_arules(address, timeout=DEFAULT_TIMEOUT, encoding=DEFAULT_ENCODING):
-    rules_resp = await a2s.arules(address, encoding=None)
+    rules_resp = await a2s.arules(address, timeout, encoding=None)
     return dayz_rules_decode(rules_resp, encoding)
 
 

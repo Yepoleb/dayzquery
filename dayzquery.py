@@ -94,6 +94,8 @@ def dayz_rules_decode(rules_resp, encoding=DEFAULT_ENCODING):
     result.unknown_3 = reader.read_uint8()
 
     result.dlcs = []
+    if (result.dlcs_count > 0):
+        result.dlcs_count = result.dlcs_count - 1
     for i in range(result.dlcs_count):
         result.dlcs.append(reader.read_uint32())
 

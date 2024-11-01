@@ -23,5 +23,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Topic :: Games/Entertainment"
     ],
-    python_requires=">=3.9"
+    python_requires=">=3.10"
 )

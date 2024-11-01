@@ -12,6 +12,8 @@ https://community.bistudio.com/wiki/Arma_3:_ServerBrowserProtocol3
 I do not understand their meaning at the time of writing as I have never played DayZ.
 """
 
+DLC_FROSTLINE = 2
+
 class DayzMod(metaclass=DataclsMeta):
     """Some hash value for identification probably"""
     hash: int
@@ -26,14 +28,14 @@ class DayzMod(metaclass=DataclsMeta):
     name: str
 
 class DayzRules(metaclass=DataclsMeta):
-    unknown_0: int
+    """Protocol version, always 2"""
+    protocol_version: int
 
-    unknown_1: int
+    """Overflow flags, meaning unknown"""
+    overflow_flags: int
 
-    """Raw value for number of DLC hash entries, you should prefer len(dlcs)"""
-    dlcs_count: int
-
-    unknown_3: int
+    """Flags to indicate which DLCs are present in the response, only known values are 0 or DLC_FROSTLINE"""
+    dlc_flags: int
 
     """DLC hash entries"""
     dlcs: list[int]
@@ -88,13 +90,12 @@ def dayz_rules_decode(rules_resp, encoding=DEFAULT_ENCODING):
     reader = a2s.byteio.ByteReader(bin_stream, endian="<")
 
     result = DayzRules()
-    result.unknown_0 = reader.read_uint8()
-    result.unknown_1 = reader.read_uint8()
-    result.dlcs_count = reader.read_uint8()
-    result.unknown_3 = reader.read_uint8()
+    result.protocol_version = reader.read_uint8()
+    result.overflow_flags = reader.read_uint8()
+    result.dlc_flags = reader.read_uint16()
 
     result.dlcs = []
-    for i in range(result.dlcs_count):
+    for i in range(result.dlc_flags.bit_count()):
         result.dlcs.append(reader.read_uint32())
 
     result.mods_count = reader.read_uint8()

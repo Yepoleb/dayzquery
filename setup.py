@@ -7,7 +7,7 @@ with open("README.md", "r") as readme:
 
 setuptools.setup(
     name="dayzquery",
-    version="1.0.0",
+    version="1.1.0",
     author="Gabriel Huber",
     author_email="mail@gabrielhuber.at",
     description="Small module to decode the DayZ rules binary response.",
@@ -23,5 +23,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
         "Topic :: Games/Entertainment"
     ],
-    python_requires=">=3.9"
+    python_requires=">=3.10"
 )

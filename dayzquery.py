@@ -1,8 +1,8 @@
 import io
+from dataclasses import dataclass
 
 import a2s
 import a2s.byteio
-from a2s.datacls import DataclsMeta
 from a2s.defaults import DEFAULT_TIMEOUT, DEFAULT_ENCODING
 
 
@@ -14,7 +14,8 @@ I do not understand their meaning at the time of writing as I have never played 
 
 DLC_FROSTLINE = 2
 
-class DayzMod(metaclass=DataclsMeta):
+@dataclass
+class DayzMod:
     """Some hash value for identification probably"""
     hash: int
 
@@ -27,7 +28,8 @@ class DayzMod(metaclass=DataclsMeta):
     """Mod name"""
     name: str
 
-class DayzRules(metaclass=DataclsMeta):
+@dataclass
+class DayzRules:
     """Protocol version, always 2"""
     protocol_version: int
 
@@ -89,40 +91,41 @@ def dayz_rules_decode(rules_resp, encoding=DEFAULT_ENCODING):
     bin_stream = io.BytesIO(bin_content)
     reader = a2s.byteio.ByteReader(bin_stream, endian="<")
 
-    result = DayzRules()
-    result.protocol_version = reader.read_uint8()
-    result.overflow_flags = reader.read_uint8()
-    result.dlc_flags = reader.read_uint16()
+    protocol_version = reader.read_uint8()
+    overflow_flags = reader.read_uint8()
+    dlc_flags = reader.read_uint16()
 
-    result.dlcs = []
-    for i in range(result.dlc_flags.bit_count()):
-        result.dlcs.append(reader.read_uint32())
+    dlcs = []
+    for i in range(dlc_flags.bit_count()):
+        dlcs.append(reader.read_uint32())
 
-    result.mods_count = reader.read_uint8()
-    result.mods = []
-    for i in range(result.mods_count):
-        mod = DayzMod()
-        mod.hash = reader.read_uint32()
-        mod.workshop_id_len = reader.read_uint8()
-        mod.workshop_id = int.from_bytes(reader.read(mod.workshop_id_len & 0x0F), "little")
+    mods_count = reader.read_uint8()
+    mods = []
+    for i in range(mods_count):
+        mod_hash = reader.read_uint32()
+        workshop_id_len = reader.read_uint8()
+        workshop_id = int.from_bytes(reader.read(workshop_id_len & 0x0F), "little")
         string_length = reader.read_uint8()
-        mod.name = reader.read(string_length).decode(encoding, errors="replace")
-        result.mods.append(mod)
+        name = reader.read(string_length).decode(encoding, errors="replace")
+        mods.append(DayzMod(mod_hash, workshop_id_len, workshop_id, name))
 
-    result.signatures_count = reader.read_uint8()
-    result.signatures = []
-    for i in range(result.signatures_count):
+    signatures_count = reader.read_uint8()
+    signatures = []
+    for i in range(signatures_count):
         name_len = reader.read_uint8()
         name = reader.read(name_len).decode(encoding, errors="replace")
-        result.signatures.append(name)
+        signatures.append(name)
 
-    result.allowed_build = bool(int(rules_resp[b"allowedBuild"].decode(encoding)))
-    result.dedicated = bool(int(rules_resp[b"dedicated"].decode(encoding)))
-    result.island = rules_resp[b"island"].decode(encoding)
-    result.language = int(rules_resp[b"language"].decode(encoding))
-    result.platform = rules_resp[b"platform"].decode(encoding)
-    result.required_build = rules_resp[b"requiredBuild"].decode(encoding)
-    result.required_version = rules_resp[b"requiredVersion"].decode(encoding)
-    result.time_left = int(rules_resp[b"timeLeft"].decode(encoding))
+    allowed_build = bool(int(rules_resp[b"allowedBuild"].decode(encoding)))
+    dedicated = bool(int(rules_resp[b"dedicated"].decode(encoding)))
+    island = rules_resp[b"island"].decode(encoding)
+    language = int(rules_resp[b"language"].decode(encoding))
+    platform = rules_resp[b"platform"].decode(encoding)
+    required_build = rules_resp[b"requiredBuild"].decode(encoding)
+    required_version = rules_resp[b"requiredVersion"].decode(encoding)
+    time_left = int(rules_resp[b"timeLeft"].decode(encoding))
 
-    return result
+    return DayzRules(
+        protocol_version, overflow_flags, dlc_flags, dlcs, mods_count, mods,
+        signatures_count, signatures, allowed_build, dedicated, island, language, platform,
+        required_build, required_version, time_left)

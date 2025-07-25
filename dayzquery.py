@@ -63,7 +63,7 @@ class DayzRules:
     required_build: str
     required_version: str
     time_left: int
-    desc: str
+    description: str
 
 
 
@@ -126,10 +126,10 @@ def dayz_rules_decode(rules_resp, encoding=DEFAULT_ENCODING):
     required_version = rules_resp[b"requiredVersion"].decode(encoding)
     time_left = int(rules_resp[b"timeLeft"].decode(encoding))
 
-    desc_len = reader.read_uint8()
-    desc = reader.read(desc_len).decode(encoding, errors="replace")
+    description_len = reader.read_uint8()
+    description = reader.read(description_len).decode(encoding, errors="replace")
 
     return DayzRules(
         protocol_version, overflow_flags, dlc_flags, dlcs, mods_count, mods,
         signatures_count, signatures, allowed_build, dedicated, island, language, platform,
-        required_build, required_version, time_left, desc)
+        required_build, required_version, time_left, description)

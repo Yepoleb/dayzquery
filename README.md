@@ -4,7 +4,7 @@ Small Python module to decode the DayZ rules binary response.
 
 ## Requirements
 
-Python >= 3.9, [python-a2s](https://github.com/Yepoleb/python-a2s)
+Python >= 3.10, [python-a2s](https://github.com/Yepoleb/python-a2s)
 
 ## Install
 

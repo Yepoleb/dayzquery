@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import a2s
 import a2s.byteio
 from a2s.defaults import DEFAULT_TIMEOUT, DEFAULT_ENCODING
-
+from enum import Enum
 
 """
 Names are based around the documentation at
@@ -12,7 +12,21 @@ https://community.bistudio.com/wiki/Arma_3:_ServerBrowserProtocol3
 I do not understand their meaning at the time of writing as I have never played DayZ.
 """
 
-DLC_FROSTLINE = 2
+
+@dataclass
+class DLCDetails:
+    flag: int
+    appid: int
+
+
+class DLC(DLCDetails, Enum):
+    """Flags to indicate which DLCs are present in the response,
+    and corresponding appid
+    """
+    VANILLA = (0, 221100)
+    FROSTLINE = (2, 2968040)
+    BADLANDS = (3, 3816030)
+
 
 @dataclass
 class DayzMod:
@@ -28,6 +42,7 @@ class DayzMod:
     """Mod name"""
     name: str
 
+
 @dataclass
 class DayzRules:
     """Protocol version, always 2"""
@@ -36,8 +51,8 @@ class DayzRules:
     """Overflow flags, meaning unknown"""
     overflow_flags: int
 
-    """Flags to indicate which DLCs are present in the response, only known values are 0 or DLC_FROSTLINE"""
-    dlc_flags: int
+    """Enum containing a DLC flag and corresponding appid"""
+    dlc_enum: DLC
 
     """DLC hash entries"""
     dlcs: list[int]
@@ -66,10 +81,10 @@ class DayzRules:
     description: str
 
 
-
 def dayz_rules(address, timeout=DEFAULT_TIMEOUT, encoding=DEFAULT_ENCODING):
     rules_resp = a2s.rules(address, timeout, encoding=None)
     return dayz_rules_decode(rules_resp, encoding)
+
 
 async def dayz_arules(address, timeout=DEFAULT_TIMEOUT, encoding=DEFAULT_ENCODING):
     rules_resp = await a2s.arules(address, timeout, encoding=None)
@@ -99,6 +114,11 @@ def dayz_rules_decode(rules_resp, encoding=DEFAULT_ENCODING):
     dlcs = []
     for i in range(dlc_flags.bit_count()):
         dlcs.append(reader.read_uint32())
+
+    for member in DLC:
+        if member.flag == dlc_flags:
+            dlc_enum = member
+            break
 
     mods_count = reader.read_uint8()
     mods = []
@@ -130,6 +150,6 @@ def dayz_rules_decode(rules_resp, encoding=DEFAULT_ENCODING):
     description = reader.read(description_len).decode(encoding, errors="replace")
 
     return DayzRules(
-        protocol_version, overflow_flags, dlc_flags, dlcs, mods_count, mods,
+        protocol_version, overflow_flags, dlc_enum, dlcs, mods_count, mods,
         signatures_count, signatures, allowed_build, dedicated, island, language, platform,
         required_build, required_version, time_left, description)

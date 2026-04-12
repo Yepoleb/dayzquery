@@ -126,8 +126,11 @@ def dayz_rules_decode(rules_resp, encoding=DEFAULT_ENCODING):
     required_version = rules_resp[b"requiredVersion"].decode(encoding)
     time_left = int(rules_resp[b"timeLeft"].decode(encoding))
 
-    description_len = reader.read_uint8()
-    description = reader.read(description_len).decode(encoding, errors="replace")
+    try:
+        description_len = reader.read_uint8()
+        description = reader.read(description_len).decode(encoding, errors="replace")
+    except a2s.BufferExhaustedError:
+        description = ""
 
     return DayzRules(
         protocol_version, overflow_flags, dlc_flags, dlcs, mods_count, mods,

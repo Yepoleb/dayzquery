@@ -14,9 +14,11 @@ I do not understand their meaning at the time of writing as I have never played 
 
 DLC_FROSTLINE = 2
 
+
 @dataclass
 class DayzMod:
     """Some hash value for identification probably"""
+
     hash: int
 
     """Length of the workshop ID in bytes, only useful if it someday contains additional data"""
@@ -28,9 +30,11 @@ class DayzMod:
     """Mod name"""
     name: str
 
+
 @dataclass
 class DayzRules:
     """Protocol version, always 2"""
+
     protocol_version: int
 
     """Overflow flags, meaning unknown"""
@@ -66,10 +70,10 @@ class DayzRules:
     description: str
 
 
-
 def dayz_rules(address, timeout=DEFAULT_TIMEOUT, encoding=DEFAULT_ENCODING):
     rules_resp = a2s.rules(address, timeout, encoding=None)
     return dayz_rules_decode(rules_resp, encoding)
+
 
 async def dayz_arules(address, timeout=DEFAULT_TIMEOUT, encoding=DEFAULT_ENCODING):
     rules_resp = await a2s.arules(address, timeout, encoding=None)
@@ -85,7 +89,11 @@ def dayz_rules_decode(rules_resp, encoding=DEFAULT_ENCODING):
     bin_items.sort()
     bin_content = b"".join(x[1] for x in bin_items)
 
-    ESCAPE_SEQUENCES = [(b"\x01\x02", b"\x00"), (b"\x01\x03", b"\xFF"), (b"\x01\x01", b"\x01")]
+    ESCAPE_SEQUENCES = [
+        (b"\x01\x02", b"\x00"),
+        (b"\x01\x03", b"\xff"),
+        (b"\x01\x01", b"\x01"),
+    ]
     for seq, char in ESCAPE_SEQUENCES:
         bin_content = bin_content.replace(seq, char)
 
@@ -126,10 +134,28 @@ def dayz_rules_decode(rules_resp, encoding=DEFAULT_ENCODING):
     required_version = rules_resp[b"requiredVersion"].decode(encoding)
     time_left = int(rules_resp[b"timeLeft"].decode(encoding))
 
-    description_len = reader.read_uint8()
-    description = reader.read(description_len).decode(encoding, errors="replace")
+    try:
+        description_len = reader.read_uint8()
+        description = reader.read(description_len).decode(encoding, errors="replace")
+    except a2s.BufferExhaustedError:
+        description = ""
 
     return DayzRules(
-        protocol_version, overflow_flags, dlc_flags, dlcs, mods_count, mods,
-        signatures_count, signatures, allowed_build, dedicated, island, language, platform,
-        required_build, required_version, time_left, description)
+        protocol_version,
+        overflow_flags,
+        dlc_flags,
+        dlcs,
+        mods_count,
+        mods,
+        signatures_count,
+        signatures,
+        allowed_build,
+        dedicated,
+        island,
+        language,
+        platform,
+        required_build,
+        required_version,
+        time_left,
+        description,
+    )

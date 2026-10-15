@@ -13,6 +13,7 @@ I do not understand their meaning at the time of writing as I have never played 
 """
 
 DLC_FROSTLINE = 2
+DLC_BADLANDS = 4
 
 @dataclass
 class DayzMod:
@@ -36,7 +37,7 @@ class DayzRules:
     """Overflow flags, meaning unknown"""
     overflow_flags: int
 
-    """Flags to indicate which DLCs are present in the response, only known values are 0 or DLC_FROSTLINE"""
+    """Flags to indicate which DLCs are present in the response. Known values are 0, DLC_FROSTLINE, and DLC_BADLANDS"""
     dlc_flags: int
 
     """DLC hash entries"""
